@@ -80,18 +80,15 @@ st.markdown("""
         color: white !important;
         border-color: #43A047 !important;
     }
-
-    .info-area { flex: 1; }
-    .char-name { font-size: 1.4em; color: #333; font-weight: 900; line-height: 1.2; }
-    .rank-label { background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: 900; }
-    .detail-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
-    .detail-item { 
-        background: rgba(255,255,255,0.6); 
-        border-left: 4px solid #eee; 
-        padding: 5px 10px; 
+.detail-item { 
+        background: transparent !important; /* 背景を透明にします */
+        border-left: 2px solid rgba(0,0,0,0.1); /* 左の線を少し細く、馴染む色にします */
+        padding: 2px 10px; 
         font-size: 0.85em; 
         font-weight: 900;
+        margin-bottom: 2px;
     }
+    
     </style>
     """, unsafe_allow_html=True)
 
