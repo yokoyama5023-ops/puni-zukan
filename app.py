@@ -1,5 +1,21 @@
 import streamlit as st
 
+st.set_page_config(
+    page_title="ぷにぷに攻略Wiki | キャラクターチェッカー",
+    page_icon="🔍",
+    layout="centered",
+    initial_sidebar_state="auto",
+)
+
+# 検索エンジン向けのキーワード設定（隠し要素）
+st.markdown(
+    """
+    <meta name="description" content="ぷにぷにのキャラクターランクや必殺技を瞬時に検索できる攻略サイトです。">
+    <meta name="keywords" content="ぷにぷに, 攻略, キャラクター, ランク, 必殺技, Wiki">
+    """,
+    unsafe_allow_stdio=True
+)
+
 st.set_page_config(page_title="ぷにぷに攻略図鑑", layout="wide")
 
 # 1. 所持データの保存
