@@ -47,13 +47,25 @@ st.markdown("""
     .detail-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
     .detail-item { background: transparent !important; border-left: 2px solid rgba(0,0,0,0.1); padding: 2px 10px; font-size: 0.85em; font-weight: 900; }
 
-    /* すべてのボタン共通 */
+    /* 全ボタン共通の形（ご提示の数値を維持） */
     div.stButton > button {
         border-radius: 0 0 12px 12px !important;
         border: 2px solid #eee !important;
         border-top: none !important;
         font-weight: 900 !important;
         height: 45px;
+    }
+
+    /* 「所持済み」ボタンの赤色を落ち着いた黄色に強制変更 */
+    div.stButton > button[kind="primary"] {
+        background-color: #f0c05a !important;
+        color: white !important;
+        border: none !important;
+    }
+    /* ホバー（マウスを乗せた時）も黄色を維持 */
+    div.stButton > button[kind="primary"]:hover {
+        background-color: #e0b04a !important;
+        color: white !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -71,7 +83,7 @@ for i, char in enumerate(filtered_list):
     is_owned = char['name'] in st.session_state.owned_set
     
     with cols[i % 2]:
-        # カード表示
+        # カード表示（ご提示のデザインそのまま）
         st.markdown(f"""
             <div class="puni-card" style="--tc: {color};">
                 <div class="card-left"><img src="{char['img']}" class="puni-img"></div>
@@ -87,16 +99,14 @@ for i, char in enumerate(filtered_list):
             </div>
         """, unsafe_allow_html=True)
         
-        # 【解決策】ボタンを2種類用意して、完全に切り替える
+        # ボタンの出し分け
         if is_owned:
-            # 所持済み：落ち着いた黄色のボタンを表示
-            if st.button("✅ 所持済み", key=f"owned_{char['name']}", use_container_width=True, type="primary"):
+            # 所持済み：type="primary"を指定（CSSで黄色に上書きされる）
+            if st.button("✅ 所持済み", key=f"btn_{char['name']}", use_container_width=True, type="primary"):
                 st.session_state.owned_set.remove(char['name'])
                 st.rerun()
-            # 黄色（Primary）にするための強制色指定
-            st.markdown(f"""<style>div:has(> button[key="owned_{char['name']}"]) button {{ background-color: #f0c05a !important; color: white !important; border: none !important; }}</style>""", unsafe_allow_html=True)
         else:
-            # 未所持：白（通常）のボタンを表示
-            if st.button("未所持", key=f"unowned_{char['name']}", use_container_width=True):
+            # 未所持：通常の白いボタン
+            if st.button("未所持", key=f"btn_{char['name']}", use_container_width=True):
                 st.session_state.owned_set.add(char['name'])
                 st.rerun()
