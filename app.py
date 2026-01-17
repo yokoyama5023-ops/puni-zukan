@@ -27,89 +27,76 @@ char_list = [
     {"name": "ガラピョン", "rank": "ZZ", "tribe": "ニョロロン", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420042.png", "hissatsu": "タップで周り消し", "skill": "デカぷに降下", "center": "-"}
 ]
 
-# 5. UIデザイン（CSS） - 崩れにくい柔軟な設計
+# 5. UIデザイン（CSS）
 st.markdown("""
     <style>
-    /* カード全体の枠組み */
     .puni-card {
         background-color: white;
         border-radius: 12px 12px 0 0;
         display: flex;
-        flex-direction: row; /* 横並び */
         border: 2px solid #eee;
-        padding: 15px;
-        gap: 15px;
-        min-height: 140px; /* 高さを少し抑える */
+        background: linear-gradient(150deg, #ffffff 65%, var(--tc, #f0f0f0) 65.5%) !important;
+        padding: 20px;
+        min-height: 180px;
     }
-    .card-left { flex: 0 0 80px; text-align: center; }
-    .puni-img { width: 80px; height: 80px; object-fit: contain; }
+    .card-left { display: flex; flex-direction: column; align-items: center; width: 110px; margin-right: 20px; }
+    .puni-img { width: 100px; height: 100px; object-fit: contain; }
     .info-area { flex: 1; }
-    .char-name { font-size: 1.2em; color: #333; font-weight: 900; }
-    .rank-label { background: #333; color: white; padding: 1px 6px; border-radius: 4px; font-size: 0.8em; }
-    
-    .detail-grid { margin-top: 8px; font-size: 0.8em; line-height: 1.4; }
-    
-    /* ボタンの共通デザイン */
+    .char-name { font-size: 1.4em; color: #333; font-weight: 900; }
+    .rank-label { background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }
+    .detail-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
+    .detail-item { background: transparent !important; border-left: 2px solid rgba(0,0,0,0.1); padding: 2px 10px; font-size: 0.85em; font-weight: 900; }
+
+    /* すべてのボタン共通 */
     div.stButton > button {
         border-radius: 0 0 12px 12px !important;
         border: 2px solid #eee !important;
         border-top: none !important;
         font-weight: 900 !important;
-        height: 40px;
-        background-color: white;
-        color: #666;
-        margin-bottom: 15px; /* 下に余白を作る */
+        height: 45px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("📚 ぷにぷに攻略図鑑")
+st.title("📚 ぷにぷに最強攻略図鑑")
 
-# 6. 検索
+# 6. 検索機能
 search_query = st.text_input("🔍 キャラクターを検索", "")
 filtered_list = [c for c in char_list if search_query in c['name']]
 
-# 7. 表示
-cols = st.columns(2) # 2列表示
+# 7. キャラクター表示
+cols = st.columns(2)
 for i, char in enumerate(filtered_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
     is_owned = char['name'] in st.session_state.owned_set
     
     with cols[i % 2]:
-        # カードHTML
+        # カード表示
         st.markdown(f"""
-            <div class="puni-card" style="background: linear-gradient(150deg, #ffffff 75%, {color} 75.5%) !important;">
+            <div class="puni-card" style="--tc: {color};">
                 <div class="card-left"><img src="{char['img']}" class="puni-img"></div>
                 <div class="info-area">
                     <span class="rank-label">{char['rank']}</span>
-                    <span style="font-size: 0.8em; color: {color}; font-weight: bold;">{char['tribe']}族</span>
-                    <div class="char-name">{char['name']}</div>
+                    <div class="char-name">{char['name']} <span style="font-size: 0.6em; color: {color};">{char['tribe']}族</span></div>
                     <div class="detail-grid">
-                        <b>技:</b> {char['hissatsu']}<br>
-                        <b>スキル:</b> {char['skill']}
+                        <div class="detail-item"><b>技:</b> {char['hissatsu']}</div>
+                        <div class="detail-item"><b>スキル:</b> {char['skill']}</div>
+                        <div class="detail-item"><b>センター:</b> {char['center']}</div>
                     </div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
-        # ボタンのラベル
-        btn_label = "✅ 所持済み" if is_owned else "未所持"
-
-        # 所持済みなら黄色くする
+        # 【解決策】ボタンを2種類用意して、完全に切り替える
         if is_owned:
-            st.markdown(f"""
-                <style>
-                div:has(> button[key="btn_{char['name']}"]) button {{
-                    background-color: #f0c05a !important;
-                    color: white !important;
-                    border-color: #e0b04a !important;
-                }}
-                </style>
-            """, unsafe_allow_html=True)
-
-        if st.button(btn_label, key=f"btn_{char['name']}", use_container_width=True):
-            if is_owned:
+            # 所持済み：落ち着いた黄色のボタンを表示
+            if st.button("✅ 所持済み", key=f"owned_{char['name']}", use_container_width=True, type="primary"):
                 st.session_state.owned_set.remove(char['name'])
-            else:
+                st.rerun()
+            # 黄色（Primary）にするための強制色指定
+            st.markdown(f"""<style>div:has(> button[key="owned_{char['name']}"]) button {{ background-color: #f0c05a !important; color: white !important; border: none !important; }}</style>""", unsafe_allow_html=True)
+        else:
+            # 未所持：白（通常）のボタンを表示
+            if st.button("未所持", key=f"unowned_{char['name']}", use_container_width=True):
                 st.session_state.owned_set.add(char['name'])
-            st.rerun()
+                st.rerun()
