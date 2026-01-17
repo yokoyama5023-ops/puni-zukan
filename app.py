@@ -1,20 +1,10 @@
 import streamlit as st
 
-# 1. ページ設定とSEO対策
+# 1. ページ設定
 st.set_page_config(
     page_title="ぷにぷに攻略Wiki | キャラクターチェッカー",
     page_icon="🔍",
     layout="wide",
-    initial_sidebar_state="auto",
-)
-
-# 検索エンジン向けのキーワード設定
-st.markdown(
-    """
-    <meta name="description" content="ぷにぷにのキャラクターランクや必殺技を瞬時に検索できる攻略サイトです。">
-    <meta name="keywords" content="ぷにぷに, 攻略, キャラクター, ランク, 必殺技, Wiki">
-    """,
-    unsafe_allow_html=True
 )
 
 # 2. 所持データの保存
@@ -31,61 +21,32 @@ TRIBE_COLORS = {
 # 4. UIデザイン（CSS）
 st.markdown("""
     <style>
-    [data-testid="column"] {
-        flex: 1 1 45% !important;
-        min-width: 45% !important;
-    }
-
+    /* カードの基本設定 */
     .puni-card {
-        position: relative;
         background-color: white;
         border-radius: 12px 12px 0 0;
-        margin-bottom: 0px;
         display: flex;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         border: 2px solid #eee;
         background: linear-gradient(150deg, #ffffff 65%, var(--tc, #f0f0f0) 65.5%) !important;
         padding: 20px;
         min-height: 180px;
     }
-
-    .card-left {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 110px;
-        margin-right: 20px;
-    }
-
-    .puni-img {
-        width: 100px;
-        height: 100px;
-        object-fit: contain;
-    }
-
+    .card-left { display: flex; flex-direction: column; align-items: center; width: 110px; margin-right: 20px; }
+    .puni-img { width: 100px; height: 100px; object-fit: contain; }
     .info-area { flex: 1; }
-    .char-name { font-size: 1.4em; color: #333; font-weight: 900; line-height: 1.2; }
-    .rank-label { background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: 900; }
+    .char-name { font-size: 1.4em; color: #333; font-weight: 900; }
+    .rank-label { background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }
     .detail-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
-    
-    .detail-item { 
-        background: transparent !important;
-        border-left: 2px solid rgba(0,0,0,0.1);
-        padding: 2px 10px; 
-        font-size: 0.85em; 
-        font-weight: 900;
-        margin-bottom: 2px;
-    }
+    .detail-item { background: transparent !important; border-left: 2px solid rgba(0,0,0,0.1); padding: 2px 10px; font-size: 0.85em; font-weight: 900; }
 
-    /* 基本のボタン設定 */
+    /* すべてのボタンの共通スタイル */
     div.stButton > button {
         border-radius: 0 0 12px 12px !important;
         border: 2px solid #eee !important;
         border-top: none !important;
-        font-weight: 900 !important;
+        width: 100%;
         height: 45px;
-        background-color: white;
-        color: #666;
+        font-weight: 900 !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -93,7 +54,7 @@ st.markdown("""
 st.title("📚 ぷにぷに最強攻略図鑑")
 
 # 5. 検索機能
-search_query = st.text_input("🔍 キャラクターを検索（名前の一部でもOK）", "")
+search_query = st.text_input("🔍 キャラクターを検索", "")
 
 char_list = [
     {"name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し&デカぷに生成", "skill": "サイズアップ", "center": "15%UP"},
@@ -105,7 +66,7 @@ char_list = [
 
 filtered_list = [c for c in char_list if search_query in c['name']]
 
-# 6. キャラクター表示ループ
+# 6. キャラクター表示
 cols = st.columns(2)
 for i, char in enumerate(filtered_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
@@ -114,9 +75,7 @@ for i, char in enumerate(filtered_list):
     with cols[i % 2]:
         st.markdown(f"""
             <div class="puni-card" style="--tc: {color};">
-                <div class="card-left">
-                    <img src="{char['img']}" class="puni-img">
-                </div>
+                <div class="card-left"><img src="{char['img']}" class="puni-img"></div>
                 <div class="info-area">
                     <span class="rank-label">{char['rank']}</span>
                     <div class="char-name">{char['name']} <span style="font-size: 0.6em; color: {color};">{char['tribe']}族</span></div>
@@ -129,21 +88,21 @@ for i, char in enumerate(filtered_list):
             </div>
         """, unsafe_allow_html=True)
         
-        # ボタンのテキスト
+        # ボタンのラベル
         btn_label = "所持済み" if is_owned else "未所持"
-        
-        # 【重要】所持済みの場合、ボタン全体の色を変える
+
+        # 【超重要】所持済みなら黄色にするCSSをボタンの直前に書く
         if is_owned:
             st.markdown(f"""
                 <style>
-                div:has(> button[key="btn_{char['name']}"]) button {{
+                div.stButton > button[key*="btn_{char['name']}"] {{
                     background-color: #f0c05a !important;
                     color: white !important;
                     border-color: #e0b04a !important;
                 }}
                 </style>
             """, unsafe_allow_html=True)
-        
+
         if st.button(btn_label, key=f"btn_{char['name']}", use_container_width=True):
             if is_owned:
                 st.session_state.owned_set.remove(char['name'])
