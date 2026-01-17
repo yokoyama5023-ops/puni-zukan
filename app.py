@@ -71,32 +71,21 @@ for i, char in enumerate(filtered_list):
     is_owned = char['name'] in st.session_state.owned_set
     
     with cols[i % 2]:
-        # カード表示
-        st.markdown(f"""
-            <div class="puni-card" style="--tc: {color};">
-                <div class="card-left"><img src="{char['img']}" class="puni-img"></div>
-                <div class="info-area">
-                    <span class="rank-label">{char['rank']}</span>
-                    <div class="char-name">{char['name']} <span style="font-size: 0.6em; color: {color};">{char['tribe']}族</span></div>
-                    <div class="detail-grid">
-                        <div class="detail-item"><b>技:</b> {char['hissatsu']}</div>
-                        <div class="detail-item"><b>スキル:</b> {char['skill']}</div>
-                        <div class="detail-item"><b>センター:</b> {char['center']}</div>
-                    </div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # 【解決策】ボタンを2種類用意して、完全に切り替える
+       # 【修正版】赤色を無視して、強制的に「落ち着いた黄色」にする命令
         if is_owned:
-            # 所持済み：落ち着いた黄色のボタンを表示
-            if st.button("✅ 所持済み", key=f"owned_{char['name']}", use_container_width=True, type="primary"):
-                st.session_state.owned_set.remove(char['name'])
-                st.rerun()
-            # 黄色（Primary）にするための強制色指定
-            st.markdown(f"""<style>div:has(> button[key="owned_{char['name']}"]) button {{ background-color: #f0c05a !important; color: white !important; border: none !important; }}</style>""", unsafe_allow_html=True)
-        else:
-            # 未所持：白（通常）のボタンを表示
-            if st.button("未所持", key=f"unowned_{char['name']}", use_container_width=True):
-                st.session_state.owned_set.add(char['name'])
-                st.rerun()
+            st.markdown(f"""
+                <style>
+                /* 所持済みボタン（Primaryボタン）の色を上書き */
+                div:has(> button[key="owned_{char['name']}"]) button {{
+                    background-color: #f0c05a !important; /* 落ち着いた黄色 */
+                    color: white !important;             /* 文字は白 */
+                    border: none !important;
+                    box-shadow: none !important;
+                }}
+                /* マウスを乗せた時（ホバー）も赤くならないように固定 */
+                div:has(> button[key="owned_{char['name']}"]) button:hover {{
+                    background-color: #e0b04a !important;
+                    color: white !important;
+                }}
+                </style>
+            """, unsafe_allow_html=True)
