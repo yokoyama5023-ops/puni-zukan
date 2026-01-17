@@ -77,17 +77,16 @@ st.markdown("""
         margin-bottom: 2px;
     }
 
-    /* Streamlit標準のボタンをカスタム */
+    /* 基本のボタン設定 */
     div.stButton > button {
         border-radius: 0 0 12px 12px !important;
         border: 2px solid #eee !important;
         border-top: none !important;
         font-weight: 900 !important;
         height: 45px;
-        transition: 0.3s;
+        background-color: white;
+        color: #666;
     }
-
-    /* 「所持済み」状態のボタンスタイル（JavaScript側で制御できないため、後述のロジックで対応） */
     </style>
     """, unsafe_allow_html=True)
 
@@ -133,14 +132,14 @@ for i, char in enumerate(filtered_list):
         # ボタンのテキスト
         btn_label = "所持済み" if is_owned else "未所持"
         
-        # 所持済みの場合のみ、黄色いボタンにするCSSを注入
+        # 【重要】所持済みの場合、ボタン全体の色を変える
         if is_owned:
             st.markdown(f"""
                 <style>
-                div:has(> button[key="btn_{char['name']}"]) > button {{
-                    background-color: #F0C05A !important;
+                div:has(> button[key="btn_{char['name']}"]) button {{
+                    background-color: #f0c05a !important;
                     color: white !important;
-                    border-color: #E0B04A !important;
+                    border-color: #e0b04a !important;
                 }}
                 </style>
             """, unsafe_allow_html=True)
