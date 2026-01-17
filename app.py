@@ -1,122 +1,86 @@
 import streamlit as st
 
 # 1. ページ設定
-st.set_page_config(
-    page_title="ぷにぷに攻略Wiki | キャラクターチェッカー",
-    page_icon="🔍",
-    layout="wide",
-)
+st.set_page_config(page_title="ぷにぷに攻略Wiki", layout="wide")
 
 # 2. 所持データの保存
 if 'owned_set' not in st.session_state:
     st.session_state.owned_set = set()
 
-# 3. 指定の種族カラー
+# 3. 種族カラー
 TRIBE_COLORS = {
     "イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6",
     "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999",
     "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF",
 }
 
-# 4. UIデザイン（CSS）
+# 4. 強力なCSS注入
 st.markdown("""
     <style>
+    /* カード全体のデザイン */
     .puni-card {
-        background-color: white;
-        border-radius: 12px 12px 0 0;
+        background: white;
+        border-radius: 12px;
+        border: 2px solid #eee;
+        padding: 15px;
         display: flex;
-        border: 2px solid #eee;
+        margin-bottom: 10px;
         background: linear-gradient(150deg, #ffffff 65%, var(--tc, #f0f0f0) 65.5%) !important;
-        padding: 20px;
-        min-height: 180px;
     }
-    .card-left { display: flex; flex-direction: column; align-items: center; width: 110px; margin-right: 20px; }
-    .puni-img { width: 100px; height: 100px; object-fit: contain; }
-    .info-area { flex: 1; }
-    .char-name { font-size: 1.4em; color: #333; font-weight: 900; }
-    .rank-label { background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }
-    .detail-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
-    .detail-item { background: transparent !important; border-left: 2px solid rgba(0,0,0,0.1); padding: 2px 10px; font-size: 0.85em; font-weight: 900; }
-
-    /* 自作ボタンのスタイル */
-    .custom-btn {
-        width: 100%;
-        height: 45px;
-        line-height: 45px;
-        text-align: center;
-        border-radius: 0 0 12px 12px;
+    .card-left { width: 100px; margin-right: 15px; text-align: center; }
+    .puni-img { width: 80px; height: 80px; object-fit: contain; }
+    
+    /* チェックボックスをボタンに見せる魔法のCSS */
+    div[data-testid="stCheckbox"] {
+        background-color: #ffffff;
         border: 2px solid #eee;
-        border-top: none;
-        font-weight: 900;
-        cursor: pointer;
+        border-radius: 8px;
+        padding: 5px 10px;
         transition: 0.3s;
-        margin-bottom: 20px;
-        display: block;
-        text-decoration: none !important;
+        width: 100%;
     }
-    .btn-unowned { background-color: white; color: #666; }
-    .btn-owned { background-color: #f0c05a !important; color: white !important; border-color: #e0b04a !important; }
+    /* チェックが入った（所持済み）の時の色：落ち着いた黄色 */
+    div[data-testid="stCheckbox"]:has(input:checked) {
+        background-color: #f0c05a !important;
+        border-color: #e0b04a !important;
+    }
+    div[data-testid="stCheckbox"]:has(input:checked) label {
+        color: white !important;
+        font-weight: bold;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("📚 ぷにぷに最強攻略図鑑")
 
-# 5. 検索機能
-search_query = st.text_input("🔍 キャラクターを検索", "")
-
 char_list = [
-    {"name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し&デカぷに生成", "skill": "サイズアップ", "center": "15%UP"},
-    {"name": "闇ケン王", "rank": "UZ", "tribe": "イサマシ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430046.png", "hissatsu": "高速数カ所消し", "skill": "技ゲージ貯め", "center": "15%UP"},
-    {"name": "エルゼメキア", "rank": "ZZZ", "tribe": "ブキミー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420015.png", "hissatsu": "周りぷに消し", "skill": "デカぷに回復", "center": "-"},
-    {"name": "輪廻", "rank": "ZZZ", "tribe": "エンマ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430001.png", "hissatsu": "全消し大ダメージ", "skill": "連結で攻撃UP", "center": "-"},
-    {"name": "ガラピョン", "rank": "ZZ", "tribe": "ニョロロン", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420042.png", "hissatsu": "タップで周り消し", "skill": "デカぷに降下", "center": "-"}
+    {"name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し", "skill": "サイズアップ"},
+    {"name": "闇ケン王", "rank": "UZ", "tribe": "イサマシ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430046.png", "hissatsu": "数カ所消し", "skill": "技ゲージ貯め"},
 ]
 
-filtered_list = [c for c in char_list if search_query in c['name']]
-
-# 6. キャラクター表示
+# 表示
 cols = st.columns(2)
-for i, char in enumerate(filtered_list):
+for i, char in enumerate(char_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
-    is_owned = char['name'] in st.session_state.owned_set
-    
     with cols[i % 2]:
-        # カード本体のHTML
+        # カード部分
         st.markdown(f"""
             <div class="puni-card" style="--tc: {color};">
                 <div class="card-left"><img src="{char['img']}" class="puni-img"></div>
-                <div class="info-area">
-                    <span class="rank-label">{char['rank']}</span>
-                    <div class="char-name">{char['name']} <span style="font-size: 0.6em; color: {color};">{char['tribe']}族</span></div>
-                    <div class="detail-grid">
-                        <div class="detail-item"><b>技:</b> {char['hissatsu']}</div>
-                        <div class="detail-item"><b>スキル:</b> {char['skill']}</div>
-                        <div class="detail-item"><b>センター:</b> {char['center']}</div>
-                    </div>
+                <div>
+                    <b style="font-size:1.2em;">{char['name']}</b> <small>{char['tribe']}族</small><br>
+                    <span style="background:#333;color:white;padding:2px 5px;border-radius:4px;">{char['rank']}</span><br>
+                    <small>技: {char['hissatsu']}</small>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
-        # 確実に色が変わるカスタムボタン
-        btn_class = "btn-owned" if is_owned else "btn-unowned"
-        btn_label = "所持済み" if is_owned else "未所持"
+        # チェックボックスをボタン化
+        is_owned = char['name'] in st.session_state.owned_set
+        checked = st.checkbox("所持済み" if is_owned else "未所持", value=is_owned, key=f"chk_{char['name']}")
         
-        # 透明なボタンを重ねる代わりに、Streamlitのbuttonを「見た目なし」で使い、外側の枠に色をつける
-        if st.button(btn_label, key=f"btn_{char['name']}", use_container_width=True):
-            if is_owned:
-                st.session_state.owned_set.remove(char['name'])
-            else:
-                st.session_state.owned_set.add(char['name'])
+        # 状態更新
+        if checked != is_owned:
+            if checked: st.session_state.owned_set.add(char['name'])
+            else: st.session_state.owned_set.remove(char['name'])
             st.rerun()
-
-        # ボタンの色を強制上書き（この場所が最も優先されます）
-        bg_color = "#f0c05a" if is_owned else "#ffffff"
-        text_color = "white" if is_owned else "#666"
-        st.markdown(f"""
-            <style>
-            div:has(> button[key="btn_{char['name']}"]) button {{
-                background-color: {bg_color} !important;
-                color: {text_color} !important;
-            }}
-            </style>
-        """, unsafe_allow_html=True)
