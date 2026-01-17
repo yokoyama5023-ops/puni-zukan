@@ -21,7 +21,6 @@ TRIBE_COLORS = {
 # 4. UIデザイン（CSS）
 st.markdown("""
     <style>
-    /* カードの基本設定 */
     .puni-card {
         background-color: white;
         border-radius: 12px 12px 0 0;
@@ -39,15 +38,24 @@ st.markdown("""
     .detail-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
     .detail-item { background: transparent !important; border-left: 2px solid rgba(0,0,0,0.1); padding: 2px 10px; font-size: 0.85em; font-weight: 900; }
 
-    /* すべてのボタンの共通スタイル */
-    div.stButton > button {
-        border-radius: 0 0 12px 12px !important;
-        border: 2px solid #eee !important;
-        border-top: none !important;
+    /* 自作ボタンのスタイル */
+    .custom-btn {
         width: 100%;
         height: 45px;
-        font-weight: 900 !important;
+        line-height: 45px;
+        text-align: center;
+        border-radius: 0 0 12px 12px;
+        border: 2px solid #eee;
+        border-top: none;
+        font-weight: 900;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-bottom: 20px;
+        display: block;
+        text-decoration: none !important;
     }
+    .btn-unowned { background-color: white; color: #666; }
+    .btn-owned { background-color: #f0c05a !important; color: white !important; border-color: #e0b04a !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -73,6 +81,7 @@ for i, char in enumerate(filtered_list):
     is_owned = char['name'] in st.session_state.owned_set
     
     with cols[i % 2]:
+        # カード本体のHTML
         st.markdown(f"""
             <div class="puni-card" style="--tc: {color};">
                 <div class="card-left"><img src="{char['img']}" class="puni-img"></div>
@@ -88,24 +97,26 @@ for i, char in enumerate(filtered_list):
             </div>
         """, unsafe_allow_html=True)
         
-        # ボタンのラベル
+        # 確実に色が変わるカスタムボタン
+        btn_class = "btn-owned" if is_owned else "btn-unowned"
         btn_label = "所持済み" if is_owned else "未所持"
-
-        # 【超重要】所持済みなら黄色にするCSSをボタンの直前に書く
-        if is_owned:
-            st.markdown(f"""
-                <style>
-                div.stButton > button[key*="btn_{char['name']}"] {{
-                    background-color: #f0c05a !important;
-                    color: white !important;
-                    border-color: #e0b04a !important;
-                }}
-                </style>
-            """, unsafe_allow_html=True)
-
+        
+        # 透明なボタンを重ねる代わりに、Streamlitのbuttonを「見た目なし」で使い、外側の枠に色をつける
         if st.button(btn_label, key=f"btn_{char['name']}", use_container_width=True):
             if is_owned:
                 st.session_state.owned_set.remove(char['name'])
             else:
                 st.session_state.owned_set.add(char['name'])
             st.rerun()
+
+        # ボタンの色を強制上書き（この場所が最も優先されます）
+        bg_color = "#f0c05a" if is_owned else "#ffffff"
+        text_color = "white" if is_owned else "#666"
+        st.markdown(f"""
+            <style>
+            div:has(> button[key="btn_{char['name']}"]) button {{
+                background-color: {bg_color} !important;
+                color: {text_color} !important;
+            }}
+            </style>
+        """, unsafe_allow_html=True)
