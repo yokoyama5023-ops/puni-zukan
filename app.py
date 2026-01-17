@@ -27,7 +27,7 @@ char_list = [
     {"name": "ガラピョン", "rank": "ZZ", "tribe": "ニョロロン", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420042.png", "hissatsu": "タップで周り消し", "skill": "デカぷに降下", "center": "-"}
 ]
 
-# 5. UIデザイン（CSS）
+# 5. 基本UIデザイン（CSS）
 st.markdown("""
     <style>
     .puni-card {
@@ -35,7 +35,6 @@ st.markdown("""
         border-radius: 12px 12px 0 0;
         display: flex;
         border: 2px solid #eee;
-        background: linear-gradient(150deg, #ffffff 65%, var(--tc, #f0f0f0) 65.5%) !important;
         padding: 20px;
         min-height: 180px;
     }
@@ -47,7 +46,7 @@ st.markdown("""
     .detail-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
     .detail-item { background: transparent !important; border-left: 2px solid rgba(0,0,0,0.1); padding: 2px 10px; font-size: 0.85em; font-weight: 900; }
 
-    /* すべてのボタン共通 */
+    /* 全ボタン共通の形 */
     div.stButton > button {
         border-radius: 0 0 12px 12px !important;
         border: 2px solid #eee !important;
@@ -64,28 +63,51 @@ st.title("📚 ぷにぷに最強攻略図鑑")
 search_query = st.text_input("🔍 キャラクターを検索", "")
 filtered_list = [c for c in char_list if search_query in c['name']]
 
-# 7. キャラクター表示
+# 7. キャラクター表示ループ
 cols = st.columns(2)
 for i, char in enumerate(filtered_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
     is_owned = char['name'] in st.session_state.owned_set
     
     with cols[i % 2]:
-       # 【修正版】赤色を無視して、強制的に「落ち着いた黄色」にする命令
+        # カードのHTML表示
+        st.markdown(f"""
+            <div class="puni-card" style="background: linear-gradient(150deg, #ffffff 65%, {color} 65.5%) !important;">
+                <div class="card-left"><img src="{char['img']}" class="puni-img"></div>
+                <div class="info-area">
+                    <span class="rank-label">{char['rank']}</span>
+                    <div class="char-name">{char['name']} <span style="font-size: 0.6em; color: {color};">{char['tribe']}族</span></div>
+                    <div class="detail-grid">
+                        <div class="detail-item"><b>技:</b> {char['hissatsu']}</div>
+                        <div class="detail-item"><b>スキル:</b> {char['skill']}</div>
+                        <div class="detail-item"><b>センター:</b> {char['center']}</div>
+                    </div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # ボタンの出し分け
         if is_owned:
+            # 所持済みボタン
+            if st.button("✅ 所持済み", key=f"owned_{char['name']}", use_container_width=True, type="primary"):
+                st.session_state.owned_set.remove(char['name'])
+                st.rerun()
+            
+            # 所持済みボタンの色を「落ち着いた黄色」に強制上書き
             st.markdown(f"""
                 <style>
-                /* 所持済みボタン（Primaryボタン）の色を上書き */
                 div:has(> button[key="owned_{char['name']}"]) button {{
-                    background-color: #f0c05a !important; /* 落ち着いた黄色 */
-                    color: white !important;             /* 文字は白 */
+                    background-color: #f0c05a !important;
+                    color: white !important;
                     border: none !important;
-                    box-shadow: none !important;
                 }}
-                /* マウスを乗せた時（ホバー）も赤くならないように固定 */
                 div:has(> button[key="owned_{char['name']}"]) button:hover {{
                     background-color: #e0b04a !important;
-                    color: white !important;
                 }}
                 </style>
             """, unsafe_allow_html=True)
+        else:
+            # 未所持ボタン
+            if st.button("未所持", key=f"unowned_{char['name']}", use_container_width=True):
+                st.session_state.owned_set.add(char['name'])
+                st.rerun()
