@@ -27,7 +27,7 @@ char_list = [
     {"name": "ガラピョン", "rank": "ZZ", "tribe": "ニョロロン", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420042.png", "hissatsu": "タップで周り消し", "skill": "デカぷに降下", "center": "-"}
 ]
 
-# 5. UIデザイン（CSS）
+# 5. UIデザイン（CSS） - ご提示の数値を完全維持
 st.markdown("""
     <style>
     .puni-card {
@@ -54,6 +54,7 @@ st.markdown("""
         border-top: none !important;
         font-weight: 900 !important;
         height: 45px;
+        margin-bottom: 20px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -71,7 +72,7 @@ for i, char in enumerate(filtered_list):
     is_owned = char['name'] in st.session_state.owned_set
     
     with cols[i % 2]:
-        # カード表示
+        # カード表示（数値設定をそのまま使用）
         st.markdown(f"""
             <div class="puni-card" style="--tc: {color};">
                 <div class="card-left"><img src="{char['img']}" class="puni-img"></div>
@@ -87,16 +88,18 @@ for i, char in enumerate(filtered_list):
             </div>
         """, unsafe_allow_html=True)
         
-        # 【解決策】ボタンを2種類用意して、完全に切り替える
+        # ボタンの出し分け（ここが重要）
         if is_owned:
-            # 所持済み：落ち着いた黄色のボタンを表示
-            if st.button("✅ 所持済み", key=f"owned_{char['name']}", use_container_width=True, type="primary"):
+            # 所持済みボタン本体
+            if st.button("✅ 所持済み", key=f"owned_{char['name']}", use_container_width=True):
                 st.session_state.owned_set.remove(char['name'])
                 st.rerun()
-            # 黄色（Primary）にするための強制色指定
+            # 色の強制上書き（赤くならないように固定）
             st.markdown(f"""<style>div:has(> button[key="owned_{char['name']}"]) button {{ background-color: #f0c05a !important; color: white !important; border: none !important; }}</style>""", unsafe_allow_html=True)
         else:
-            # 未所持：白（通常）のボタンを表示
+            # 未所持ボタン本体
             if st.button("未所持", key=f"unowned_{char['name']}", use_container_width=True):
                 st.session_state.owned_set.add(char['name'])
                 st.rerun()
+            # 未所持の色（白）
+            st.markdown(f"""<style>div:has(> button[key="unowned_{char['name']}"]) button {{ background-color: white !important; color: #666 !important; }}</style>""", unsafe_allow_html=True)
