@@ -7,7 +7,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# 2. 所持データの保存
+# 2. 所持データの保存（セッション内）
 if 'owned_set' not in st.session_state:
     st.session_state.owned_set = set()
 
@@ -20,11 +20,11 @@ TRIBE_COLORS = {
 
 # 4. キャラクターデータ
 char_list = [
-    {"name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し&デカぷに生成", "skill": "サイズアップ", "center": "15%UP"},
-    {"name": "闇ケン王", "rank": "UZ", "tribe": "イサマシ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430046.png", "hissatsu": "高速数カ所消し", "skill": "技ゲージ貯め", "center": "15%UP"},
-    {"name": "エルゼメキア", "rank": "ZZZ", "tribe": "ブキミー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420015.png", "hissatsu": "周りぷに消し", "skill": "デカぷに回復", "center": "-"},
-    {"name": "輪廻", "rank": "ZZZ", "tribe": "エンマ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430001.png", "hissatsu": "全消し大ダメージ", "skill": "連結で攻撃UP", "center": "-"},
-    {"name": "ガラピョン", "rank": "ZZ", "tribe": "ニョロロン", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420042.png", "hissatsu": "タップで周り消し", "skill": "デカぷに降下", "center": "-"}
+    {"id": "30430045", "name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し&デカぷに生成", "skill": "サイズアップ", "center": "15%UP"},
+    {"id": "30430046", "name": "闇ケン王", "rank": "UZ", "tribe": "イサマシ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430046.png", "hissatsu": "高速数カ所消し", "skill": "技ゲージ貯め", "center": "15%UP"},
+    {"id": "30420015", "name": "エルゼメキア", "rank": "ZZZ", "tribe": "ブキミー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420015.png", "hissatsu": "周りぷに消し", "skill": "デカぷに回復", "center": "-"},
+    {"id": "30430001", "name": "輪廻", "rank": "ZZZ", "tribe": "エンマ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430001.png", "hissatsu": "全消し大ダメージ", "skill": "連結で攻撃UP", "center": "-"},
+    {"id": "30420042", "name": "ガラピョン", "rank": "ZZ", "tribe": "ニョロロン", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420042.png", "hissatsu": "タップで周り消し", "skill": "デカぷに降下", "center": "-"}
 ]
 
 # 5. UIデザイン（CSS）
@@ -46,6 +46,8 @@ st.markdown("""
 .rank-label { background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }
 .detail-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
 .detail-item { background: transparent !important; border-left: 2px solid rgba(0,0,0,0.1); padding: 2px 10px; font-size: 0.85em; font-weight: 900; }
+
+/* ボタンのスタイル設定 */
 div.stButton > button {
     border-radius: 0 0 12px 12px !important;
     border: 2px solid #eee !important;
@@ -53,6 +55,7 @@ div.stButton > button {
     font-weight: 900 !important;
     height: 45px;
 }
+/* 所持済み（Primary）を黄色に固定 */
 div.stButton > button[kind="primary"] {
     background-color: #f0c05a !important;
     color: white !important;
@@ -60,7 +63,6 @@ div.stButton > button[kind="primary"] {
 }
 div.stButton > button[kind="primary"]:hover {
     background-color: #e0b04a !important;
-    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -75,10 +77,11 @@ filtered_list = [c for c in char_list if search_query in c['name']]
 cols = st.columns(2)
 for i, char in enumerate(filtered_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
-    is_owned = char['name'] in st.session_state.owned_set
+    is_owned = char['id'] in st.session_state.owned_set
+    
     with cols[i % 2]:
-        # カードのHTML
-        card_html = f"""
+        # カード表示
+        st.markdown(f"""
             <div class="puni-card" style="--tc: {color};">
                 <div class="card-left"><img src="{char['img']}" class="puni-img"></div>
                 <div class="info-area">
@@ -91,15 +94,14 @@ for i, char in enumerate(filtered_list):
                     </div>
                 </div>
             </div>
-        """
-        st.markdown(card_html, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
         
-        # ボタンの表示
+        # ボタン表示（ID管理）
         if is_owned:
-            if st.button("所持済み", key=f"btn_{char['name']}", use_container_width=True, type="primary"):
-                st.session_state.owned_set.remove(char['name'])
+            if st.button("所持済み", key=f"btn_{char['id']}", use_container_width=True, type="primary"):
+                st.session_state.owned_set.remove(char['id'])
                 st.rerun()
         else:
-            if st.button("未所持", key=f"btn_{char['name']}", use_container_width=True):
-                st.session_state.owned_set.add(char['name'])
+            if st.button("未所持", key=f"btn_{char['id']}", use_container_width=True):
+                st.session_state.owned_set.add(char['id'])
                 st.rerun()
