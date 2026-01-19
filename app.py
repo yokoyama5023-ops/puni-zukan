@@ -4,13 +4,13 @@ import requests
 # --- 1. Firebase設定 ---
 FIREBASE_URL = "https://punipuni-charchecker-default-rtdb.firebaseio.com/"
 
-# --- 2. ページ設定（UI維持） ---
+# --- 2. ページ設定 ---
 st.set_page_config(page_title="ぷにぷに攻略Wiki | キャラクターチェッカー", page_icon="🔍", layout="wide")
 
 if 'owned_set' not in st.session_state:
     st.session_state.owned_set = set()
 
-# --- 3. 同期機能 (Firebase版) ---
+# --- 3. 同期機能 ---
 def save_to_firebase(code):
     if len(code) != 8:
         st.warning("8文字ちょうどで入力してください")
@@ -19,9 +19,7 @@ def save_to_firebase(code):
     data = {"owned_ids": list(st.session_state.owned_set)}
     res = requests.put(url, json=data) 
     if res.status_code == 200:
-        st.success(f"コード '{code}' で保存しました！")
-    else:
-        st.error("保存に失敗しました。")
+        st.success(f"保存しました！")
 
 def load_from_firebase(code):
     if len(code) != 8:
@@ -33,12 +31,9 @@ def load_from_firebase(code):
         data = res.json()
         if data and 'owned_ids' in data:
             st.session_state.owned_set = set(data['owned_ids'])
-            st.success(f"コード '{code}' のデータを読み込みました！")
             st.rerun()
-        else:
-            st.error("データが見つかりません。")
 
-# --- 4. UIデザイン（CSS） ---
+# --- 4. UIデザイン ---
 st.markdown("""
 <style>
 .puni-card {
@@ -70,12 +65,11 @@ div.stButton > button[kind="primary"] {
 st.title("📚 ぷにぷに最強攻略図鑑")
 
 # 同期エリア
-with st.expander("🔄 PC・スマホ同期（自分専用の8文字コード）", expanded=True):
-    st.write("好きな8文字を決めて「保存」してください。スマホで同じコードを「読込」すれば同期されます。")
+with st.expander("🔄 PC・スマホ同期", expanded=True):
     c1, c2, c3 = st.columns([2,1,1])
-    user_code = c1.text_input("8文字コードを入力", placeholder="例: PUNI2024", label_visibility="collapsed")
-    if c2.button("📤 データを保存", use_container_width=True): save_to_firebase(user_code)
-    if c3.button("📥 データを読込", use_container_width=True): load_from_firebase(user_code)
+    user_code = c1.text_input("8文字コード", placeholder="例: PUNI2024", label_visibility="collapsed")
+    if c2.button("📤 保存", use_container_width=True): save_to_firebase(user_code)
+    if c3.button("📥 読込", use_container_width=True): load_from_firebase(user_code)
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6", "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999", "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF"}
 
@@ -89,26 +83,30 @@ char_list = [
         "img": "https://rsc.yokai-punipuni.jp/images/chara/body/31001344.png", 
         "hissatsu": "天空のタクト", 
         "skill": "サイズアップ/技ゲージ残し",
-        "center": "イナイレキャラのHP14%・攻6%UP"  # センター効果あり
+        "center": "イナイレHP14%・攻6%UP"
     },
     {"id": "30430045", "name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し&デカぷに生成", "skill": "サイズアップ", "center": None},
     {"id": "30430046", "name": "闇ケン王", "rank": "UZ", "tribe": "イサマシ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430046.png", "hissatsu": "高速数カ所消し", "skill": "技ゲージ貯め", "center": None},
-    {"id": "30420015", "name": "エルゼメキア", "rank": "ZZZ", "tribe": "ブキミー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420015.png", "hissatsu": "周りぷに消し", "skill": "デカぷに回復", "center": None}
 ]
 
-# 表示
+# 表示ロジック
 search_query = st.text_input("🔍 キャラクターを検索", "")
+filtered_list = [c for c in char_list if search_query in c['name']]
+
 cols = st.columns(2)
-for i, char in enumerate([c for c in char_list if search_query in c['name']]):
+for i, char in enumerate(filtered_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
     is_owned = char['id'] in st.session_state.owned_set
+    
     with cols[i % 2]:
-        # センター効果がある場合のみHTMLを作成
-        center_html = f'<div class="detail-item"><b>センター効果:</b> {char["center"]}</div>' if char.get("center") else ""
+        # センター効果がある場合のみ追加のHTML行を作成
+        center_html = f'<div class="detail-item"><b>効果:</b> {char["center"]}</div>' if char.get("center") else ""
         
         st.markdown(f'''
             <div class="puni-card" style="--tc: {color};">
-                <div class="card-left"><img src="{char["img"]}" class="puni-img"></div>
+                <div class="card-left">
+                    <img src="{char["img"]}" class="puni-img">
+                </div>
                 <div class="info-area">
                     <span class="rank-label">{char["rank"]}</span>
                     <div class="char-name">{char["name"]} <span style="font-size: 0.6em; color: {color};">{char["tribe"]}族</span></div>
