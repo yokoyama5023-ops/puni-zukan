@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 
 # --- 1. Firebase設定 ---
-# あなたが取得したURLをここにセットしました
 FIREBASE_URL = "https://punipuni-charchecker-default-rtdb.firebaseio.com/"
 
 # --- 2. ページ設定（UI維持） ---
@@ -16,14 +15,13 @@ def save_to_firebase(code):
     if len(code) != 8:
         st.warning("8文字ちょうどで入力してください")
         return
-    # users/コード名.json という場所に保存することで個人を識別します
     url = f"{FIREBASE_URL}users/{code}.json"
     data = {"owned_ids": list(st.session_state.owned_set)}
     res = requests.put(url, json=data) 
     if res.status_code == 200:
-        st.success(f"コード '{code}' で保存しました！スマホでこのコードを打てば同期できます。")
+        st.success(f"コード '{code}' で保存しました！")
     else:
-        st.error("保存に失敗しました。Firebaseのルール設定を確認してください。")
+        st.error("保存に失敗しました。")
 
 def load_from_firebase(code):
     if len(code) != 8:
@@ -38,9 +36,9 @@ def load_from_firebase(code):
             st.success(f"コード '{code}' のデータを読み込みました！")
             st.rerun()
         else:
-            st.error("データが見つかりません。先に保存するか、コードが正しいか確認してください。")
+            st.error("データが見つかりません。")
 
-# --- 4. UIデザイン（CSS） - 完璧なデザインを復元 ---
+# --- 4. UIデザイン（CSS） ---
 st.markdown("""
 <style>
 .puni-card {
@@ -83,9 +81,19 @@ TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチ
 
 # キャラデータ
 char_list = [
-    {"id": "30430045", "name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し&デカぷに生成", "skill": "サイズアップ"},
-    {"id": "30430046", "name": "闇ケン王", "rank": "UZ", "tribe": "イサマシ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430046.png", "hissatsu": "高速数カ所消し", "skill": "技ゲージ貯め"},
-    {"id": "30420015", "name": "エルゼメキア", "rank": "ZZZ", "tribe": "ブキミー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420015.png", "hissatsu": "周りぷに消し", "skill": "デカぷに回復"}
+    {
+        "id": "1344", 
+        "name": "うんめい", 
+        "rank": "UZ+", 
+        "tribe": "イサマシ", 
+        "img": "https://rsc.yokai-punipuni.jp/images/chara/body/31001344.png", 
+        "hissatsu": "天空のタクト", 
+        "skill": "サイズアップ/技ゲージ残し",
+        "center": "イナイレキャラのHP14%・攻6%UP"  # センター効果あり
+    },
+    {"id": "30430045", "name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し&デカぷに生成", "skill": "サイズアップ", "center": None},
+    {"id": "30430046", "name": "闇ケン王", "rank": "UZ", "tribe": "イサマシ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430046.png", "hissatsu": "高速数カ所消し", "skill": "技ゲージ貯め", "center": None},
+    {"id": "30420015", "name": "エルゼメキア", "rank": "ZZZ", "tribe": "ブキミー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30420015.png", "hissatsu": "周りぷに消し", "skill": "デカぷに回復", "center": None}
 ]
 
 # 表示
@@ -95,7 +103,24 @@ for i, char in enumerate([c for c in char_list if search_query in c['name']]):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
     is_owned = char['id'] in st.session_state.owned_set
     with cols[i % 2]:
-        st.markdown(f'<div class="puni-card" style="--tc: {color};"><div class="card-left"><img src="{char["img"]}" class="puni-img"></div><div class="info-area"><span class="rank-label">{char["rank"]}</span><div class="char-name">{char["name"]} <span style="font-size: 0.6em; color: {color};">{char["tribe"]}族</span></div><div class="detail-grid"><div class="detail-item"><b>技:</b> {char["hissatsu"]}</div><div class="detail-item"><b>スキル:</b> {char["skill"]}</div></div></div></div>', unsafe_allow_html=True)
+        # センター効果がある場合のみHTMLを作成
+        center_html = f'<div class="detail-item"><b>センター効果:</b> {char["center"]}</div>' if char.get("center") else ""
+        
+        st.markdown(f'''
+            <div class="puni-card" style="--tc: {color};">
+                <div class="card-left"><img src="{char["img"]}" class="puni-img"></div>
+                <div class="info-area">
+                    <span class="rank-label">{char["rank"]}</span>
+                    <div class="char-name">{char["name"]} <span style="font-size: 0.6em; color: {color};">{char["tribe"]}族</span></div>
+                    <div class="detail-grid">
+                        <div class="detail-item"><b>技:</b> {char["hissatsu"]}</div>
+                        <div class="detail-item"><b>スキル:</b> {char["skill"]}</div>
+                        {center_html}
+                    </div>
+                </div>
+            </div>
+        ''', unsafe_allow_html=True)
+        
         if st.button("所持済み" if is_owned else "未所持", key=char['id'], use_container_width=True, type="primary" if is_owned else "secondary"):
             if is_owned: st.session_state.owned_set.remove(char['id'])
             else: st.session_state.owned_set.add(char['id'])
