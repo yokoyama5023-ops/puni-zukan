@@ -25,7 +25,7 @@ def load_from_firebase(code):
         st.session_state.owned_set = set(res.json().get('owned_ids', []))
         st.rerun()
 
-# --- 4. UIデザイン（元のデザインを復元） ---
+# --- 4. UIデザイン ---
 st.markdown("""
 <style>
 .puni-card {
@@ -65,7 +65,7 @@ with st.expander("🔄 PC・スマホ同期", expanded=True):
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "プリチー": "#FFB3E6", "ブキミー": "#D1BBFF"}
 
-# キャラデータ（デザインを壊さないよう項目を整理）
+# キャラデータ
 char_list = [
     {
         "id": "1344", 
@@ -75,9 +75,18 @@ char_list = [
         "img": "https://rsc.yokai-punipuni.jp/images/chara/body/31001344.png", 
         "hissatsu": "天空のタクト", 
         "skill": "サイズアップ/技ゲージ残し",
-        "extra": "センター：イナイレHP14%・攻6%UP"
+        "extra": "センター：イナイレHP14%・攻6%UP"  # 表示される
     },
-    {"id": "30430045", "name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し&デカぷに生成", "skill": "サイズアップ", "extra": ""},
+    {
+        "id": "30430045", 
+        "name": "伏李ユウ", 
+        "rank": "UZ", 
+        "tribe": "プリチー", 
+        "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", 
+        "hissatsu": "ぷに消し&デカぷに生成", 
+        "skill": "サイズアップ", 
+        "extra": None  # 表示されない
+    },
 ]
 
 cols = st.columns(2)
@@ -85,7 +94,9 @@ for i, char in enumerate(char_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
     is_owned = char['id'] in st.session_state.owned_set
     with cols[i % 2]:
-        extra_html = f'<div class="detail-item">{char["extra"]}</div>' if char["extra"] else ""
+        # extraがある時だけHTMLを作成する
+        extra_html = f'<div class="detail-item"><b>効果:</b> {char["extra"]}</div>' if char.get("extra") else ""
+        
         st.markdown(f'''
         <div class="puni-card" style="--tc: {color};">
             <div class="card-left"><img src="{char["img"]}" class="puni-img"></div>
