@@ -57,11 +57,30 @@ with st.expander("🔄 PC・スマホ同期", expanded=True):
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6", "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999", "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF"}
 
-# キャラデータ
+# キャラデータ（skill1, skill2 に分けました）
 char_list = [
-    {"id": "1344", "name": "うんめい", "rank": "UZ+", "tribe": "イサマシ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/31001344.png", "hissatsu": "天空のタクト", "skill": "サイズアップ/技ゲージ残し", "center": "イナイレHP14%・攻6%UP"},
-    {"id": "30430045", "name": "伏李ユウ", "rank": "UZ", "tribe": "プリチー", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", "hissatsu": "ぷに消し&デカぷに生成", "skill": "サイズアップ", "center": None},
-    {"id": "30430046", "name": "闇ケン王", "rank": "UZ", "tribe": "イサマシ", "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430046.png", "hissatsu": "高速数カ所消し", "skill": "技ゲージ貯め", "center": None},
+    {
+        "id": "1344", 
+        "name": "うんめい", 
+        "rank": "UZ+", 
+        "tribe": "イサマシ", 
+        "img": "https://rsc.yokai-punipuni.jp/images/chara/body/31001344.png", 
+        "hissatsu": "天空のタクト", 
+        "skill1": "つなげてサイズアップ", 
+        "skill2": "技ゲージ満タンでスタート",
+        "center": "イナイレHP14%・攻6%UP"
+    },
+    {
+        "id": "30430045", 
+        "name": "伏李ユウ", 
+        "rank": "UZ", 
+        "tribe": "プリチー", 
+        "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", 
+        "hissatsu": "ぷに消し&デカぷに生成", 
+        "skill1": "サイズアップ", 
+        "skill2": None,
+        "center": None
+    },
 ]
 
 # 表示
@@ -73,11 +92,12 @@ for i, char in enumerate(filtered_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
     is_owned = char['id'] in st.session_state.owned_set
     with cols[i % 2]:
-        # センター効果の条件分岐
+        # スキルとセンター効果の表示判定
+        s1_html = f'<div class="detail-item"><b>スキル1:</b> {char["skill1"]}</div>' if char.get("skill1") else ""
+        s2_html = f'<div class="detail-item"><b>スキル2:</b> {char["skill2"]}</div>' if char.get("skill2") else ""
         center_html = f'<div class="detail-item"><b>効果:</b> {char["center"]}</div>' if char.get("center") else ""
         
-        # ご指定の閉じタグ構造に合わせて整形
-        st.markdown(f'''<div class="puni-card" style="--tc: {color};"><div class="card-left"><img src="{char["img"]}" class="puni-img"></div><div class="info-area"><span class="rank-label">{char["rank"]}</span><div class="char-name">{char["name"]} <span style="font-size: 0.6em; color: {color};">{char["tribe"]}族</span></div><div class="detail-grid"><div class="detail-item"><b>技:</b> {char["hissatsu"]}</div><div class="detail-item"><b>スキル:</b> {char["skill"]}</div>{center_html}</div></div></div>''', unsafe_allow_html=True)
+        st.markdown(f'''<div class="puni-card" style="--tc: {color};"><div class="card-left"><img src="{char["img"]}" class="puni-img"></div><div class="info-area"><span class="rank-label">{char["rank"]}</span><div class="char-name">{char["name"]} <span style="font-size: 0.6em; color: {color};">{char["tribe"]}族</span></div><div class="detail-grid"><div class="detail-item"><b>技:</b> {char["hissatsu"]}</div>{s1_html}{s2_html}{center_html}</div></div></div>''', unsafe_allow_html=True)
         
         if st.button("所持済み" if is_owned else "未所持", key=char['id'], use_container_width=True, type="primary" if is_owned else "secondary"):
             if is_owned: st.session_state.owned_set.remove(char['id'])
