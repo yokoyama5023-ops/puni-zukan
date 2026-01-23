@@ -57,7 +57,8 @@ with st.expander("🔄 PC・スマホ同期", expanded=True):
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6", "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999", "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF"}
 
-# キャラデータ（skill1, skill2 に分けました）
+
+# キャラデータ（技名を「効果」に書き換えました）
 char_list = [
     {
         "id": "1344", 
@@ -65,7 +66,7 @@ char_list = [
         "rank": "UZ+", 
         "tribe": "イサマシ", 
         "img": "https://rsc.yokai-punipuni.jp/images/chara/body/31001344.png", 
-        "hissatsu": "天空のタクト", 
+        "hissatsu": "全消し&デカぷに技ゲージUP", # 技名を効果に変更
         "skill1": "つなげてサイズアップ", 
         "skill2": "技ゲージ満タンでスタート",
         "center": "イナイレHP14%・攻6%UP"
@@ -76,13 +77,23 @@ char_list = [
         "rank": "UZ", 
         "tribe": "プリチー", 
         "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", 
-        "hissatsu": "ぷに消し&デカぷに生成", 
+        "hissatsu": "全消し&デカぷに生成", 
         "skill1": "サイズアップ", 
         "skill2": None,
         "center": None
     },
+    {
+        "id": "30430046", 
+        "name": "闇ケン王", 
+        "rank": "UZ", 
+        "tribe": "イサマシ", 
+        "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430046.png", 
+        "hissatsu": "タップでデカぷに周囲消し", 
+        "skill1": "技ゲージ貯め", 
+        "skill2": None,
+        "center": None
+    },
 ]
-
 # 表示
 search_query = st.text_input("🔍 キャラクターを検索", "")
 filtered_list = [c for c in char_list if search_query in c['name']]
