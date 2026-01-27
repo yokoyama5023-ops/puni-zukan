@@ -9,7 +9,7 @@ st.set_page_config(page_title="ぷにぷに攻略Wiki", page_icon="🔍", layout
 if 'owned_set' not in st.session_state:
     st.session_state.owned_set = set()
 
-# --- 同期機能 ---
+# --- 3. 同期機能 ---
 def save_to_firebase(code):
     if len(code) != 8: return
     url = f"{FIREBASE_URL}users/{code}.json"
@@ -25,7 +25,7 @@ def load_from_firebase(code):
         st.session_state.owned_set = set(res.json().get('owned_ids', []))
         st.rerun()
 
-# --- UIデザイン (画像下情報の追加) ---
+# --- 4. UIデザイン ---
 st.markdown("""
 <style>
 .puni-card {
@@ -37,7 +37,6 @@ st.markdown("""
 .card-left { display: flex; flex-direction: column; align-items: center; width: 120px; margin-right: 20px; }
 .puni-img { width: 100px; height: 100px; object-fit: contain; }
 
-/* 💡 初登場情報のスタイル */
 .release-info {
     margin-top: 8px;
     font-size: 0.65em;
@@ -57,17 +56,18 @@ div.stButton > button[kind="primary"] { background-color: #f0c05a !important; co
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📚 ぷにぷに攻略図鑑")
+st.title("ぷにぷに攻略図鑑")
 
-with st.expander("🔄 PC・スマホ同期"):
+# 💡 🔄などの絵文字を削除しました
+with st.expander("PC・スマホ同期"):
     c1, c2, c3 = st.columns([2,1,1])
     user_code = c1.text_input("8文字コード", label_visibility="collapsed")
-    if c2.button("📤 保存"): save_to_firebase(user_code)
-    if c3.button("📥 読込"): load_from_firebase(user_code)
+    if c2.button("保存", use_container_width=True): save_to_firebase(user_code)
+    if c3.button("読込", use_container_width=True): load_from_firebase(user_code)
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6", "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999", "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF"}
 
-# --- キャラデータ (release_date, event_name を追加) ---
+# --- キャラデータ ---
 char_list = [
     {
         "id": "1344", 
@@ -86,7 +86,7 @@ char_list = [
 ]
 
 # --- 表示ロジック ---
-search_query = st.text_input("🔍 検索", "")
+search_query = st.text_input("キャラクターを検索", "")
 filtered_list = [c for c in char_list if search_query in c['name']]
 
 cols = st.columns(2)
@@ -94,14 +94,13 @@ for i, char in enumerate(filtered_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
     is_owned = char['id'] in st.session_state.owned_set
     with cols[i % 2]:
-        # 各種情報のHTML生成
         s1 = f'<div class="detail-item"><b>スキル1:</b> {char.get("skill1")}</div>' if char.get("skill1") else ""
         s2 = f'<div class="detail-item"><b>スキル2:</b> {char.get("skill2")}</div>' if char.get("skill2") else ""
         ct = f'<div class="detail-item"><b>効果:</b> {char.get("center")}</div>' if char.get("center") else ""
         tr = f'<div class="detail-item"><b>特徴:</b> {char.get("trait")}</div>' if char.get("trait") else ""
         
-        # 💡 画像の下に表示する日付とイベント名のHTML
-        rel_h = f'<div class="release-info">📅 {char["release_date"]}<br>{char["event_name"]}</div>' if char.get("release_date") else ""
+        # 💡 📅などの絵文字を削除しました
+        rel_h = f'<div class="release-info">{char["release_date"]}<br>{char["event_name"]}</div>' if char.get("release_date") else ""
         
         st.markdown(f'''
             <div class="puni-card" style="--tc: {color};">
