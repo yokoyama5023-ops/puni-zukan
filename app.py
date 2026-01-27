@@ -9,7 +9,7 @@ st.set_page_config(page_title="ぷにぷに攻略Wiki", page_icon="🔍", layout
 if 'owned_set' not in st.session_state:
     st.session_state.owned_set = set()
 
-# --- 3. 同期機能 ---
+# --- 同期機能 ---
 def save_to_firebase(code):
     if len(code) != 8: return
     url = f"{FIREBASE_URL}users/{code}.json"
@@ -37,6 +37,14 @@ st.markdown("""
 .card-left { display: flex; flex-direction: column; align-items: center; width: 120px; margin-right: 20px; }
 .puni-img { width: 100px; height: 100px; object-fit: contain; }
 
+/* 💡 ID表示：説明文と同じサイズ(0.85em)・数字のみ */
+.char-id {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 900;
+    margin-bottom: 5px; /* 下にずらすための余白 */
+}
+
 .release-info {
     margin-top: 8px;
     font-size: 0.65em;
@@ -58,7 +66,6 @@ div.stButton > button[kind="primary"] { background-color: #f0c05a !important; co
 
 st.title("ぷにぷに攻略図鑑")
 
-# 💡 🔄などの絵文字を削除しました
 with st.expander("PC・スマホ同期"):
     c1, c2, c3 = st.columns([2,1,1])
     user_code = c1.text_input("8文字コード", label_visibility="collapsed")
@@ -67,7 +74,7 @@ with st.expander("PC・スマホ同期"):
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6", "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999", "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF"}
 
-# --- キャラデータ ---
+# --- 5. キャラデータ ---
 char_list = [
     {
         "id": "1344", 
@@ -85,7 +92,7 @@ char_list = [
     },
 ]
 
-# --- 表示ロジック ---
+# --- 6. 表示ロジック ---
 search_query = st.text_input("キャラクターを検索", "")
 filtered_list = [c for c in char_list if search_query in c['name']]
 
@@ -98,14 +105,12 @@ for i, char in enumerate(filtered_list):
         s2 = f'<div class="detail-item"><b>スキル2:</b> {char.get("skill2")}</div>' if char.get("skill2") else ""
         ct = f'<div class="detail-item"><b>効果:</b> {char.get("center")}</div>' if char.get("center") else ""
         tr = f'<div class="detail-item"><b>特徴:</b> {char.get("trait")}</div>' if char.get("trait") else ""
-        
-        # 💡 📅などの絵文字を削除しました
         rel_h = f'<div class="release-info">{char["release_date"]}<br>{char["event_name"]}</div>' if char.get("release_date") else ""
         
         st.markdown(f'''
             <div class="puni-card" style="--tc: {color};">
                 <div class="card-left">
-                    <img src="{char["img"]}" class="puni-img">
+                    <div class="char-id">{char["id"][-4:]}</div> <img src="{char["img"]}" class="puni-img">
                     {rel_h}
                 </div>
                 <div class="info-area">
