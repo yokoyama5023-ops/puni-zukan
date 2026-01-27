@@ -4,35 +4,28 @@ import requests
 # --- 1. Firebase設定 ---
 FIREBASE_URL = "https://punipuni-charchecker-default-rtdb.firebaseio.com/"
 
-# --- 2. ページ設定 ---
 st.set_page_config(page_title="ぷにぷに攻略Wiki", page_icon="🔍", layout="wide")
 
 if 'owned_set' not in st.session_state:
     st.session_state.owned_set = set()
 
-# --- 3. 同期機能 ---
+# --- 同期機能 ---
 def save_to_firebase(code):
-    if len(code) != 8:
-        st.warning("8文字ちょうどで入力してください")
-        return
+    if len(code) != 8: return
     url = f"{FIREBASE_URL}users/{code}.json"
     data = {"owned_ids": list(st.session_state.owned_set)}
-    res = requests.put(url, json=data)
-    if res.status_code == 200:
-        st.success("保存しました！")
+    requests.put(url, json=data)
+    st.success("保存完了")
 
 def load_from_firebase(code):
-    if len(code) != 8:
-        st.warning("8文字ちょうどで入力してください")
-        return
+    if len(code) != 8: return
     url = f"{FIREBASE_URL}users/{code}.json"
     res = requests.get(url)
     if res.status_code == 200 and res.json():
-        data = res.json()
-        st.session_state.owned_set = set(data.get('owned_ids', []))
+        st.session_state.owned_set = set(res.json().get('owned_ids', []))
         st.rerun()
 
-# --- 4. UIデザイン (元の読みやすい設定) ---
+# --- UIデザイン (画像下情報の追加) ---
 st.markdown("""
 <style>
 .puni-card {
@@ -41,8 +34,19 @@ st.markdown("""
     background: linear-gradient(150deg, #ffffff 65%, var(--tc, #f0f0f0) 65.5%) !important;
     padding: 20px; min-height: 180px;
 }
-.card-left { display: flex; flex-direction: column; align-items: center; width: 110px; margin-right: 20px; }
+.card-left { display: flex; flex-direction: column; align-items: center; width: 120px; margin-right: 20px; }
 .puni-img { width: 100px; height: 100px; object-fit: contain; }
+
+/* 💡 初登場情報のスタイル */
+.release-info {
+    margin-top: 8px;
+    font-size: 0.65em;
+    color: #666;
+    text-align: center;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
 .info-area { flex: 1; }
 .char-name { font-size: 1.4em; color: #333; font-weight: 900; }
 .rank-label { background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }
@@ -55,15 +59,15 @@ div.stButton > button[kind="primary"] { background-color: #f0c05a !important; co
 
 st.title("📚 ぷにぷに攻略図鑑")
 
-with st.expander("🔄 PC・スマホ同期", expanded=True):
+with st.expander("🔄 PC・スマホ同期"):
     c1, c2, c3 = st.columns([2,1,1])
-    user_code = c1.text_input("8文字コード", placeholder="例: PUNI2024", label_visibility="collapsed")
-    if c2.button("📤 保存", use_container_width=True): save_to_firebase(user_code)
-    if c3.button("📥 読込", use_container_width=True): load_from_firebase(user_code)
+    user_code = c1.text_input("8文字コード", label_visibility="collapsed")
+    if c2.button("📤 保存"): save_to_firebase(user_code)
+    if c3.button("📥 読込"): load_from_firebase(user_code)
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6", "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999", "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF"}
 
-# --- 5. キャラデータ ---
+# --- キャラデータ (release_date, event_name を追加) ---
 char_list = [
     {
         "id": "1344", 
@@ -75,24 +79,14 @@ char_list = [
         "skill1": "つなげてサイズアップ", 
         "skill2": "技ゲージ満タンでスタート",
         "center": "イナイレHP14%・攻6%UP",
-        "trait": "イナズマイレブン"
-    },
-    {
-        "id": "30430045", 
-        "name": "伏李ユウ", 
-        "rank": "UZ", 
-        "tribe": "プリチー", 
-        "img": "https://rsc.yokai-punipuni.jp/images/chara/body/30430045.png", 
-        "hissatsu": "全消し&デカぷに生成", 
-        "skill1": "サイズアップ", 
-        "skill2": None,
-        "center": None,
-        "trait": None
+        "trait": "イナズマイレブン",
+        "release_date": "2024/01/17",
+        "event_name": "イナズマイレブンコラボ第3弾"
     },
 ]
 
-# --- 6. 表示ロジック ---
-search_query = st.text_input("🔍 キャラクターを検索", "")
+# --- 表示ロジック ---
+search_query = st.text_input("🔍 検索", "")
 filtered_list = [c for c in char_list if search_query in c['name']]
 
 cols = st.columns(2)
@@ -100,12 +94,31 @@ for i, char in enumerate(filtered_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
     is_owned = char['id'] in st.session_state.owned_set
     with cols[i % 2]:
-        s1_h = f'<div class="detail-item"><b>スキル1:</b> {char.get("skill1")}</div>' if char.get("skill1") else ""
-        s2_h = f'<div class="detail-item"><b>スキル2:</b> {char.get("skill2")}</div>' if char.get("skill2") else ""
-        ct_h = f'<div class="detail-item"><b>効果:</b> {char.get("center")}</div>' if char.get("center") else ""
-        tr_h = f'<div class="detail-item"><b>特徴:</b> {char.get("trait")}</div>' if char.get("trait") else ""
+        # 各種情報のHTML生成
+        s1 = f'<div class="detail-item"><b>スキル1:</b> {char.get("skill1")}</div>' if char.get("skill1") else ""
+        s2 = f'<div class="detail-item"><b>スキル2:</b> {char.get("skill2")}</div>' if char.get("skill2") else ""
+        ct = f'<div class="detail-item"><b>効果:</b> {char.get("center")}</div>' if char.get("center") else ""
+        tr = f'<div class="detail-item"><b>特徴:</b> {char.get("trait")}</div>' if char.get("trait") else ""
         
-        st.markdown(f'''<div class="puni-card" style="--tc: {color};"><div class="card-left"><img src="{char["img"]}" class="puni-img"></div><div class="info-area"><span class="rank-label">{char["rank"]}</span><div class="char-name">{char["name"]} <span style="font-size: 0.6em; color: {color};">{char["tribe"]}族</span></div><div class="detail-grid"><div class="detail-item"><b>技:</b> {char["hissatsu"]}</div>{s1_h}{s2_h}{ct_h}{tr_h}</div></div></div>''', unsafe_allow_html=True)
+        # 💡 画像の下に表示する日付とイベント名のHTML
+        rel_h = f'<div class="release-info">📅 {char["release_date"]}<br>{char["event_name"]}</div>' if char.get("release_date") else ""
+        
+        st.markdown(f'''
+            <div class="puni-card" style="--tc: {color};">
+                <div class="card-left">
+                    <img src="{char["img"]}" class="puni-img">
+                    {rel_h}
+                </div>
+                <div class="info-area">
+                    <span class="rank-label">{char["rank"]}</span>
+                    <div class="char-name">{char["name"]} <span style="font-size: 0.6em; color: {color};">{char["tribe"]}族</span></div>
+                    <div class="detail-grid">
+                        <div class="detail-item"><b>技:</b> {char["hissatsu"]}</div>
+                        {s1}{s2}{ct}{tr}
+                    </div>
+                </div>
+            </div>
+        ''', unsafe_allow_html=True)
         
         if st.button("所持済み" if is_owned else "未所持", key=char['id'], use_container_width=True, type="primary" if is_owned else "secondary"):
             if is_owned: st.session_state.owned_set.remove(char['id'])
