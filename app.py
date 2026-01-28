@@ -4,28 +4,35 @@ import requests
 # --- 1. Firebase設定 ---
 FIREBASE_URL = "https://punipuni-charchecker-default-rtdb.firebaseio.com/"
 
+# --- 2. ページ設定 ---
 st.set_page_config(page_title="ぷにぷに攻略Wiki", page_icon="🔍", layout="wide")
 
 if 'owned_set' not in st.session_state:
     st.session_state.owned_set = set()
 
-# --- 同期機能 ---
+# --- 3. 同期機能 ---
 def save_to_firebase(code):
-    if len(code) != 8: return
+    if len(code) != 8:
+        st.warning("8文字ちょうどで入力してください")
+        return
     url = f"{FIREBASE_URL}users/{code}.json"
     data = {"owned_ids": list(st.session_state.owned_set)}
-    requests.put(url, json=data)
-    st.success("保存完了")
+    res = requests.put(url, json=data)
+    if res.status_code == 200:
+        st.success("保存しました")
 
 def load_from_firebase(code):
-    if len(code) != 8: return
+    if len(code) != 8:
+        st.warning("8文字ちょうどで入力してください")
+        return
     url = f"{FIREBASE_URL}users/{code}.json"
     res = requests.get(url)
     if res.status_code == 200 and res.json():
-        st.session_state.owned_set = set(res.json().get('owned_ids', []))
+        data = res.json()
+        st.session_state.owned_set = set(data.get('owned_ids', []))
         st.rerun()
 
-# --- 4. UIデザイン ---
+# --- 4. UIデザイン (完全版レイアウト) ---
 st.markdown("""
 <style>
 .puni-card {
@@ -35,16 +42,19 @@ st.markdown("""
     padding: 20px; min-height: 180px;
 }
 .card-left { display: flex; flex-direction: column; align-items: center; width: 120px; margin-right: 20px; }
-.puni-img { width: 100px; height: 100px; object-fit: contain; }
 
-/* 💡 ID表示：説明文と同じサイズ(0.85em)・数字のみ */
+/* 💡 ID：キャラ名と同じ1.4em / 太字900 / 濃いグレー */
 .char-id {
-    font-size: 0.85em;
-    color: #666;
+    font-size: 1.4em;
+    color: #333;
     font-weight: 900;
-    margin-bottom: 5px; /* 下にずらすための余白 */
+    margin-bottom: 5px;
+    line-height: 1.1;
 }
 
+.puni-img { width: 100px; height: 100px; object-fit: contain; }
+
+/* 💡 初登場情報：シンプルに文字のみ */
 .release-info {
     margin-top: 8px;
     font-size: 0.65em;
@@ -59,6 +69,7 @@ st.markdown("""
 .rank-label { background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }
 .detail-grid { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 15px; }
 .detail-item { background: transparent !important; border-left: 2px solid rgba(0,0,0,0.1); padding: 2px 10px; font-size: 0.85em; font-weight: 900; line-height: 1.4; }
+
 div.stButton > button { border-radius: 0 0 12px 12px !important; border: 2px solid #eee !important; border-top: none !important; font-weight: 900 !important; height: 45px; }
 div.stButton > button[kind="primary"] { background-color: #f0c05a !important; color: white !important; border: none !important; }
 </style>
@@ -66,15 +77,16 @@ div.stButton > button[kind="primary"] { background-color: #f0c05a !important; co
 
 st.title("ぷにぷに攻略図鑑")
 
+# --- 5. 同期エリア (絵文字なしシンプル版) ---
 with st.expander("PC・スマホ同期"):
     c1, c2, c3 = st.columns([2,1,1])
-    user_code = c1.text_input("8文字コード", label_visibility="collapsed")
+    user_code = c1.text_input("8文字コード", placeholder="PUNI2024", label_visibility="collapsed")
     if c2.button("保存", use_container_width=True): save_to_firebase(user_code)
     if c3.button("読込", use_container_width=True): load_from_firebase(user_code)
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6", "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999", "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF"}
 
-# --- 5. キャラデータ ---
+# --- 6. キャラデータ ---
 char_list = [
     {
         "id": "1344", 
@@ -92,7 +104,7 @@ char_list = [
     },
 ]
 
-# --- 6. 表示ロジック ---
+# --- 7. 表示ロジック ---
 search_query = st.text_input("キャラクターを検索", "")
 filtered_list = [c for c in char_list if search_query in c['name']]
 
@@ -110,7 +122,8 @@ for i, char in enumerate(filtered_list):
         st.markdown(f'''
             <div class="puni-card" style="--tc: {color};">
                 <div class="card-left">
-                    <div class="char-id">{char["id"][-4:]}</div> <img src="{char["img"]}" class="puni-img">
+                    <div class="char-id">{char["id"]}</div>
+                    <img src="{char["img"]}" class="puni-img">
                     {rel_h}
                 </div>
                 <div class="info-area">
