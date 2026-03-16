@@ -102,6 +102,20 @@ char_list = [
         "release_date": "2024/01/17",
         "event_name": "イナズマイレブンコラボ第3弾"
     },
+    {
+        "id": "", 
+        "name": "大血戦スターエルゼメキア", 
+        "rank": "UZ", 
+        "tribe": "プリチー", 
+        "img": "https://rsc.yokai-punipuni.jp/images/chara/body/33004168.png", 
+        "hissatsu": "ぷに全消し(自分が消えるほど強力)", 
+        "skill1": "自身の妖怪ぷにを出しやすくする", 
+        "skill2": "フィーバーインで技ゲージがたまる",
+        "center": "", 
+        "trait": "", 
+        "release_date": "", 
+        "event_name": ""
+    },
 ]
 
 # --- 7. 表示ロジック ---
