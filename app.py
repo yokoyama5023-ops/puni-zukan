@@ -32,7 +32,7 @@ def load_from_firebase(code):
         st.session_state.owned_set = set(data.get('owned_ids', []))
         st.rerun()
 
-# --- 4. UIデザイン (完全版レイアウト) ---
+# --- 4. UIデザイン ---
 st.markdown("""
 <style>
 .puni-card {
@@ -42,34 +42,14 @@ st.markdown("""
     padding: 20px; min-height: 180px;
 }
 .card-left { display: flex; flex-direction: column; align-items: center; width: 120px; margin-right: 20px; }
-
-/* 💡 ID：キャラ名と同じ1.4em / 太字900 / 濃いグレー */
-.char-id {
-    font-size: 1.4em;
-    color: #333;
-    font-weight: 900;
-    margin-bottom: 5px;
-    line-height: 1.1;
-}
-
+.char-id { font-size: 1.4em; color: #333; font-weight: 900; margin-bottom: 5px; line-height: 1.1; }
 .puni-img { width: 100px; height: 100px; object-fit: contain; }
-
-/* 💡 初登場情報：シンプルに文字のみ */
-.release-info {
-    margin-top: 8px;
-    font-size: 0.65em;
-    color: #666;
-    text-align: center;
-    line-height: 1.2;
-    font-weight: 700;
-}
-
+.release-info { margin-top: 8px; font-size: 0.65em; color: #666; text-align: center; line-height: 1.2; font-weight: 700; }
 .info-area { flex: 1; }
 .char-name { font-size: 1.4em; color: #333; font-weight: 900; }
 .rank-label { background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }
 .detail-grid { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 15px; }
 .detail-item { background: transparent !important; border-left: 2px solid rgba(0,0,0,0.1); padding: 2px 10px; font-size: 0.85em; font-weight: 900; line-height: 1.4; }
-
 div.stButton > button { border-radius: 0 0 12px 12px !important; border: 2px solid #eee !important; border-top: none !important; font-weight: 900 !important; height: 45px; }
 div.stButton > button[kind="primary"] { background-color: #f0c05a !important; color: white !important; border: none !important; }
 </style>
@@ -77,7 +57,6 @@ div.stButton > button[kind="primary"] { background-color: #f0c05a !important; co
 
 st.title("ぷにぷに攻略図鑑")
 
-# --- 5. 同期エリア (絵文字なしシンプル版) ---
 with st.expander("PC・スマホ同期"):
     c1, c2, c3 = st.columns([2,1,1])
     user_code = c1.text_input("8文字コード", placeholder="PUNI2024", label_visibility="collapsed")
@@ -86,7 +65,7 @@ with st.expander("PC・スマホ同期"):
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6", "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999", "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF"}
 
-# --- 6. キャラデータ ---
+# --- 5. キャラデータ（ここを綺麗に保つのがコツです） ---
 char_list = [
     {
         "id": "1344", 
@@ -110,14 +89,15 @@ char_list = [
         "img": "https://rsc.yokai-punipuni.jp/images/chara/body/33004168.png", 
         "hissatsu": "ぷに全消し(自分が消えるほど強力)", 
         "skill1": "自身の妖怪ぷにを出しやすくする", 
-        "skill2": "フィーバーインで技ゲージがたまる", 
-        "trait": "妖怪学園Y", 
-        "release_date": "", 
+        "skill2": "フィーバーインで技ゲージがたまる",
+        "center": "",
+        "trait": "妖怪学園Y",
+        "release_date": "",
         "event_name": ""
     },
 ]
 
-# --- 7. 表示ロジック ---
+# --- 6. 表示ロジック ---
 search_query = st.text_input("キャラクターを検索", "")
 filtered_list = [c for c in char_list if search_query in c['name']]
 
