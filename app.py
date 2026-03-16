@@ -103,16 +103,15 @@ char_list = [
         "event_name": "イナズマイレブンコラボ第3弾"
     },
     {
-        "id": "", 
+        "id": "4480", 
         "name": "大血戦スターエルゼメキア", 
         "rank": "UZ", 
         "tribe": "プリチー", 
         "img": "https://rsc.yokai-punipuni.jp/images/chara/body/33004168.png", 
         "hissatsu": "ぷに全消し(自分が消えるほど強力)", 
         "skill1": "自身の妖怪ぷにを出しやすくする", 
-        "skill2": "フィーバーインで技ゲージがたまる",
-        "center": "", 
-        "trait": "", 
+        "skill2": "フィーバーインで技ゲージがたまる", 
+        "trait": "妖怪学園Y", 
         "release_date": "", 
         "event_name": ""
     },
