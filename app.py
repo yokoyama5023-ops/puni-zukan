@@ -65,7 +65,7 @@ with st.expander("PC・スマホ同期"):
 
 TRIBE_COLORS = {"イサマシ": "#FFB3BA", "ゴーケツ": "#FFDFBA", "プリチー": "#FFB3E6", "ポカポカ": "#BAFFC9", "フシギ": "#FFFFBA", "エンマ": "#FF9999", "ウスラカゲ": "#BAE1FF", "ブキミー": "#D1BBFF", "ニョロロン": "#BFFFFF"}
 
-# --- 5. キャラデータ（ここを綺麗に保つのがコツです） ---
+# --- 5. キャラデータ（全項目あり・完全版） ---
 char_list = [
     {
         "id": "1344", 
@@ -90,14 +90,14 @@ char_list = [
         "hissatsu": "ぷに全消し(自分が消えるほど強力)", 
         "skill1": "自身の妖怪ぷにを出しやすくする", 
         "skill2": "フィーバーインで技ゲージがたまる",
-        "center": "あ",
+        "center": "",
         "trait": "妖怪学園Y",
-        "release_date": "あ",
-        "event_name": "あ"
+        "release_date": "",
+        "event_name": ""
     },
 ]
 
-# --- 6. 表示ロジック ---
+# --- 6. 表示ロジック（空欄ガード付き） ---
 search_query = st.text_input("キャラクターを検索", "")
 filtered_list = [c for c in char_list if search_query in c['name']]
 
@@ -106,11 +106,16 @@ for i, char in enumerate(filtered_list):
     color = TRIBE_COLORS.get(char['tribe'], "#ccc")
     is_owned = char['id'] in st.session_state.owned_set
     with cols[i % 2]:
-        s1 = f'<div class="detail-item"><b>スキル1:</b> {char.get("skill1")}</div>' if char.get("skill1") else ""
-        s2 = f'<div class="detail-item"><b>スキル2:</b> {char.get("skill2")}</div>' if char.get("skill2") else ""
-        ct = f'<div class="detail-item"><b>効果:</b> {char.get("center")}</div>' if char.get("center") else ""
-        tr = f'<div class="detail-item"><b>特徴:</b> {char.get("trait")}</div>' if char.get("trait") else ""
-        rel_h = f'<div class="release-info">{char["release_date"]}<br>{char["event_name"]}</div>' if char.get("release_date") else ""
+        # 各項目が空文字 "" じゃない時だけ HTML を作る仕組み
+        s1 = f'<div class="detail-item"><b>スキル1:</b> {char["skill1"]}</div>' if char.get("skill1") else ""
+        s2 = f'<div class="detail-item"><b>スキル2:</b> {char["skill2"]}</div>' if char.get("skill2") else ""
+        ct = f'<div class="detail-item"><b>効果:</b> {char["center"]}</div>' if char.get("center") else ""
+        tr = f'<div class="detail-item"><b>特徴:</b> {char["trait"]}</div>' if char.get("trait") else ""
+        
+        # 日付とイベント名、どちらかがあれば表示
+        rel_h = ""
+        if char.get("release_date") or char.get("event_name"):
+            rel_h = f'<div class="release-info">{char.get("release_date", "")}<br>{char.get("event_name", "")}</div>'
         
         st.markdown(f'''
             <div class="puni-card" style="--tc: {color};">
