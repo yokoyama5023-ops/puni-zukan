@@ -90,10 +90,10 @@ char_list = [
         "hissatsu": "ぷに全消し(自分が消えるほど強力)", 
         "skill1": "自身の妖怪ぷにを出しやすくする", 
         "skill2": "フィーバーインで技ゲージがたまる",
-        "center": "",
+        "center": "あ",
         "trait": "妖怪学園Y",
-        "release_date": "",
-        "event_name": ""
+        "release_date": "あ",
+        "event_name": "あ"
     },
 ]
 
